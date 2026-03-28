@@ -55,5 +55,8 @@ ENV NODE_ENV=production \
 # VOLUME ["/paperclip"]  # Removed: Railway does not support VOLUME
 EXPOSE 3100
 
+COPY --chown=node:node docker-entrypoint.sh /paperclip/docker-entrypoint.sh
+RUN chmod +x /paperclip/docker-entrypoint.sh
+
 USER node
-CMD ["node", "--import", "./server/node_modules/tsx/dist/loader.mjs", "server/dist/index.js"]
+CMD ["/bin/sh", "/paperclip/docker-entrypoint.sh"]
