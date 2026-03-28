@@ -17,6 +17,15 @@ if [ ! -f "$CONFIG_PATH" ]; then
   PUBLIC_URL="${PAPERCLIP_PUBLIC_URL:-https://paperclip-production-1cf5.up.railway.app}"
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   
+  # Use external postgres when DATABASE_URL is set, otherwise embedded
+  if [ -n "$DATABASE_URL" ]; then
+    DB_MODE="postgres"
+    echo "DATABASE_URL detected — using external PostgreSQL"
+  else
+    DB_MODE="embedded-postgres"
+    echo "No DATABASE_URL — using embedded PostgreSQL"
+  fi
+  
   cat > "$CONFIG_PATH" <<EOF
 {
   "\$meta": {
@@ -33,7 +42,7 @@ if [ ! -f "$CONFIG_PATH" ]; then
     "serveUi": true
   },
   "database": {
-    "mode": "embedded-postgres",
+    "mode": "${DB_MODE}",
     "embeddedPostgresPort": 54329,
     "embeddedPostgresDataDir": "/paperclip/instances/default/db"
   },
@@ -79,5 +88,7 @@ fi
 # Disable Vite dev middleware in production (paperclipai run auto-enables it
 # when it detects the source-path entry, but we need static UI serving)
 export PAPERCLIP_UI_DEV_MIDDLEWARE=false
+# Auto-apply database migrations (no TTY in container)
+export PAPERCLIP_MIGRATION_AUTO_APPLY=true
 echo "Starting Paperclip with paperclipai run..."
 exec node --import ./cli/node_modules/tsx/dist/loader.mjs cli/src/index.ts run --config "$CONFIG_PATH"

@@ -178,7 +178,9 @@ async function importServerEntry(): Promise<StartedServer> {
 }
 
 function shouldGenerateBootstrapInviteAfterStart(config: PaperclipConfig): boolean {
-  return config.server.deploymentMode === "authenticated" && config.database.mode === "embedded-postgres";
+  if (config.server.deploymentMode !== "authenticated") return false;
+  // Allow bootstrap for both embedded-postgres and external postgres modes
+  return config.database.mode === "embedded-postgres" || config.database.mode === "postgres";
 }
 
 async function startServerFromModule(mod: unknown, label: string): Promise<StartedServer> {
