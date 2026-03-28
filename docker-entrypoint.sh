@@ -13,42 +13,61 @@ if [ ! -f "$CONFIG_PATH" ]; then
   
   DEPLOY_MODE="${PAPERCLIP_DEPLOYMENT_MODE:-authenticated}"
   DEPLOY_EXPOSURE="${PAPERCLIP_DEPLOYMENT_EXPOSURE:-public}"
-  AUTH_SECRET="${BETTER_AUTH_SECRET:-$(head -c 32 /dev/urandom | base64)}"
   SERVER_PORT="${PORT:-3100}"
+  PUBLIC_URL="${PAPERCLIP_PUBLIC_URL:-https://paperclip-production-1cf5.up.railway.app}"
+  NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   
   cat > "$CONFIG_PATH" <<EOF
 {
-  "meta": {
-    "version": 1
+  "\$meta": {
+    "version": 1,
+    "updatedAt": "${NOW}",
+    "source": "onboard"
   },
   "server": {
     "host": "0.0.0.0",
     "port": ${SERVER_PORT},
     "deploymentMode": "${DEPLOY_MODE}",
-    "deploymentExposure": "${DEPLOY_EXPOSURE}"
+    "exposure": "${DEPLOY_EXPOSURE}",
+    "allowedHostnames": ["paperclip.railway.internal", "paperclip-production-1cf5.up.railway.app"],
+    "serveUi": true
   },
   "database": {
     "mode": "embedded-postgres",
     "embeddedPostgresPort": 54329,
-    "embeddedPostgresDataDir": "/paperclip/instances/default/pgdata"
+    "embeddedPostgresDataDir": "/paperclip/instances/default/db"
   },
   "auth": {
-    "baseUrlMode": "auto",
-    "sessionMaxAge": 2592000
+    "baseUrlMode": "explicit",
+    "publicBaseUrl": "${PUBLIC_URL}",
+    "disableSignUp": false
   },
   "storage": {
-    "mode": "local-disk",
+    "provider": "local_disk",
     "localDisk": {
-      "baseDir": "/paperclip/instances/default/storage"
+      "baseDir": "/paperclip/instances/default/data/storage"
+    },
+    "s3": {
+      "bucket": "paperclip",
+      "region": "us-east-1",
+      "prefix": "",
+      "forcePathStyle": false
     }
   },
   "secrets": {
-    "mode": "local-encrypted"
+    "provider": "local_encrypted",
+    "strictMode": false,
+    "localEncrypted": {
+      "keyFilePath": "/paperclip/instances/default/secrets/master.key"
+    }
   },
   "logging": {
-    "level": "info"
+    "mode": "file",
+    "logDir": "/paperclip/instances/default/logs"
   },
-  "llm": {}
+  "llm": {
+    "provider": "openai"
+  }
 }
 EOF
 
