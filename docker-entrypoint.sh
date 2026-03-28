@@ -43,6 +43,7 @@ if [ ! -f "$CONFIG_PATH" ]; then
   },
   "database": {
     "mode": "${DB_MODE}",
+    "connectionString": "${DATABASE_URL:-}",
     "embeddedPostgresPort": 54329,
     "embeddedPostgresDataDir": "/paperclip/instances/default/db"
   },
