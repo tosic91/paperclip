@@ -76,5 +76,8 @@ EOF
 fi
 
 # Start the server using paperclipai run (handles bootstrap-ceo auto-generation)
+# Disable Vite dev middleware in production (paperclipai run auto-enables it
+# when it detects the source-path entry, but we need static UI serving)
+export PAPERCLIP_UI_DEV_MIDDLEWARE=false
 echo "Starting Paperclip with paperclipai run..."
 exec node --import ./cli/node_modules/tsx/dist/loader.mjs cli/src/index.ts run --config "$CONFIG_PATH"
