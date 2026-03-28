@@ -58,4 +58,4 @@ fi
 
 # Start the server using paperclipai run (handles bootstrap-ceo auto-generation)
 echo "Starting Paperclip with paperclipai run..."
-exec node --import ./cli/node_modules/tsx/dist/loader.mjs cli/src/index.ts run --yes
+exec node --import ./cli/node_modules/tsx/dist/loader.mjs cli/src/index.ts run --config "$CONFIG_PATH"
